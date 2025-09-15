@@ -71,14 +71,7 @@ harmonize_fips <- function(df,
   # Ensure FIPS codes are properly formatted character strings
   df <- df %>% 
     mutate(
-      across(all_of(fips_col), function(x) {
-        x <- as.character(x)
-        case_when(
-          str_starts(x, "G") ~ str_c(str_sub(x, 2, 3), str_sub(x, 5, 7)),
-          !str_starts(x, "G") ~ str_pad(x, 5, pad = "0"),
-          TRUE ~ x
-        )
-      })
+      across(all_of(fips_col), ~reformat_fips(.))
     )
   
   # Special handling for Connecticut COGs if needed
@@ -179,12 +172,10 @@ harmonize_fips <- function(df,
   }
   
   # Format output FIPS based on user request
-  if (output_format == "nhgis") {
-    df_harmonized <- df_harmonized %>% 
-      mutate(
-        across(all_of(fips_col), ~ str_c("G", str_sub(., 1, 2), "0", str_sub(., 3, 5), "0"))
-      )
-  }
+  df_harmonized <- df_harmonized %>% 
+    mutate(
+      across(all_of(fips_col), ~reformat_fips(., output_format = output_format))
+    )
   
   return(df_harmonized)
 }
